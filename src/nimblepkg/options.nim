@@ -615,6 +615,7 @@ proc parseFlag*(flag, val: string, result: var Options, kind = cmdLongOption) =
   of "reject", "n": result.forcePrompts = forcePromptNo
   of "nimbledir": result.nimbleDir = val
   of "silent": result.verbosity = SilentPriority
+  # of "info": result.verbosity = MediumPriority
   of "verbose": result.verbosity = LowPriority
   of "debug": result.verbosity = DebugPriority
   of "offline": result.offline = true
