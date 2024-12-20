@@ -598,21 +598,21 @@ proc getDownloadInfo*(
     ignorePackageCache = false,
 ): (DownloadMethod, string, Table[string, string]) =
 
-  echo "getDownloadInfo:pv.name: ", $pv.name
+  # echo "getDownloadInfo:pv.name: ", $pv.name
   var pkg = initPackage()
   if getPackage(pv.name, options, pkg, ignorePackageCache):
     let (url, metadata) = getUrlData(pkg.url)
     result = (pkg.downloadMethod, url, metadata)
-    echo "getDownloadInfo:getPackage: ", $result
+    # echo "getDownloadInfo:getPackage: ", $result
     return
   elif pv.name.isURL:
-    echo "getDownloadInfo:isURL:name: ", $pv.name
+    # echo "getDownloadInfo:isURL:name: ", $pv.name
     # echo "getDownloadInfo:isURL:options.nimbleData: ", $options.nimbleData
     let (url, urlmeta) = getUrlData(pv.name)
     var metadata = urlmeta
     metadata["urlOnly"] = "true"
     result = (checkUrlType(url), url, metadata)
-    echo "getDownloadInfo:isURL: ", $result
+    # echo "getDownloadInfo:isURL: ", $result
     return
   elif pv.name.isForgeAlias:
     let url = newForge(pv.name).expand()
