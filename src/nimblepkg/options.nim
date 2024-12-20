@@ -115,6 +115,7 @@ type
       custRunFlags*: seq[string]
     of actionDeps:
       format*: string
+      depsAction*: string
     of actionShellEnv, actionShell:
       discard
 
@@ -740,6 +741,10 @@ proc parseFlag*(flag, val: string, result: var Options, kind = cmdLongOption) =
     case f
     of "format":
       result.action.format = val
+    of "tree":
+      result.action.depsAction = "tree"
+    of "inverted":
+      result.action.depsAction = "inverted"
     else:
       wasFlagHandled = false
   else:

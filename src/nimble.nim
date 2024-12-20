@@ -1925,9 +1925,25 @@ proc lock(options: Options) =
   updateSyncFile(pkgInfo, options)
   displayLockOperationFinish(lockExists)
 
-proc depsTree(options: Options) =
+proc depsTree(options: Options,
+              pkgInfo: PackageInfo,
+              dependencies: seq[PackageInfo],
+              errors: ValidationErrors) =
   ## Prints the dependency tree
 
+  if options.action.format == "json":
+    if options.action.depsAction == "inverted":
+      raise nimbleError("Deps JSON format does not support inverted tree")
+    echo (%depsRecursive(pkgInfo, dependencies, errors)).pretty
+  elif options.action.depsAction == "inverted":
+    printDepsHumanReadableInverted(pkgInfo, dependencies, errors)
+  elif options.action.depsAction == "tree":
+    printDepsHumanReadable(pkgInfo, dependencies, errors)
+  else:
+    printDepsHumanReadable(pkgInfo, dependencies, errors, true)
+
+proc deps(options: Options) =
+  ## handles deps actions
   let pkgInfo = getPkgInfo(getCurrentDir(), options)
 
   var errors = validateDevModeDepsWorkingCopiesBeforeLock(pkgInfo, options)
@@ -1942,12 +1958,14 @@ proc depsTree(options: Options) =
     if not dependencyGraph.contains name:
       errors.del name
 
-  if options.action.format == "json":
-    echo (%depsRecursive(pkgInfo, dependencies, errors)).pretty
-  elif options.action.format == "inverted":
-    printDepsHumanReadableInverted(pkgInfo, dependencies, errors)
-  else:
-    printDepsHumanReadable(pkgInfo, dependencies, errors)
+  if options.action.depsAction in ["", "tree", "inverted"]:
+    depsTree(options, pkgInfo, dependencies, errors)
+  elif options.action.depsAction in ["update"]:
+    # here we could updates the deps
+    echo "hi"
+    discard
+  elif options.action.depsAction in ["get"]:
+    discard
 
 proc syncWorkingCopy(name: string, path: Path, dependentPkg: PackageInfo,
                      options: Options) =
@@ -2343,7 +2361,7 @@ proc doAction(options: var Options) =
   of actionLock:
     lock(options)
   of actionDeps:
-    depsTree(options)
+    deps(options)
   of actionSync:
     sync(options)
   of actionSetup:
@@ -2493,8 +2511,8 @@ when isMainModule:
   var opt: Options
   try:
     opt = parseCmdLine()
-    opt.setNimbleDir
-    opt.loadNimbleData
+    opt.setNimbleDir()
+    opt.loadNimbleData()
     if opt.action.typ in {actionTasks, actionRun, actionBuild, actionCompile, actionDevelop}:
       # Implicitly disable package validation for these commands.
       opt.disableValidation = true
