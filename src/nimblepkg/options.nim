@@ -79,7 +79,7 @@ type
 
   Action* = object
     case typ*: ActionType
-    of actionNil, actionList, actionPublish, actionTasks, actionCheck,
+    of actionNil, actionList, actionTasks, actionCheck,
        actionSetup, actionClean, actionManual: nil
     of actionSync:
       listOnly*: bool
@@ -116,6 +116,8 @@ type
     of actionDeps:
       format*: string
       depsAction*: string
+    of actionPublish:
+      publishAction*: string
     of actionShellEnv, actionShell:
       discard
 
@@ -737,6 +739,12 @@ proc parseFlag*(flag, val: string, result: var Options, kind = cmdLongOption) =
     case f
     of "l", "listonly":
       result.action.listOnly = true
+    else:
+      wasFlagHandled = false
+  of actionPublish:
+    case f
+    of "tags":
+      result.action.publishAction = "tags"
     else:
       wasFlagHandled = false
   of actionDeps:
