@@ -553,7 +553,7 @@ proc installFromDir(dir: string, requestedVer: VersionRange, options: Options,
   let pkgDestDir = pkgInfo.getPkgDest(options)
 
   # Fill package Meta data
-  pkgInfo.metaData.url = url
+  pkgInfo.metaData.url = url.getUrl(options)
   pkgInfo.isLink = false
 
   # Don't copy artifacts if project local deps mode and "installing" the top

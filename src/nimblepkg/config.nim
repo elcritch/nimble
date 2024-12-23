@@ -117,7 +117,7 @@ proc parseConfig*(): Config =
         of "target":
           case currentSection
           of "urlmapping":
-            currentUrlMapping.source = e.value
+            currentUrlMapping.target = e.value
           else: assert false
         of "path":
           case currentSection

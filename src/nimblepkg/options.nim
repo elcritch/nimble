@@ -839,6 +839,11 @@ proc parseCmdLine*(): Options =
     # nimble run foobar -v
     result.showVersion = false
 
+proc getUrl*(url: string, options: Options): string =
+  result = options.config.urlMappings.getOrDefault(url, url)
+  echo "getUrl:urls: ", options.config.urlMappings
+  echo "getUrl: ", result, " <= ", url
+
 proc getProxy*(options: Options): Proxy =
   ## Returns ``nil`` if no proxy is specified.
   var url = ""

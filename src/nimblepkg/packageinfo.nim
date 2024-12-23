@@ -79,7 +79,7 @@ proc parseDownloadMethod*(meth: string): DownloadMethod =
     raise nimbleError("Invalid download method: " & meth)
 
 {.warning[ProveInit]: off.}
-proc fromJson(obj: JsonNode): Package =
+proc fromJson(obj: JsonNode, options: Options): Package =
   ## Constructs a Package object from a JSON node.
   ##
   ## Aborts execution if the JSON node doesn't contain the required fields.
@@ -89,7 +89,7 @@ proc fromJson(obj: JsonNode): Package =
   else:
     result.alias = ""
     result.version = newVersion(obj.optionalField("version"))
-    result.url = obj.requiredField("url")
+    result.url = obj.requiredField("url").getUrl(options)
     result.downloadMethod = obj.requiredField("method").parseDownloadMethod
     result.dvcsTag = obj.optionalField("dvcs-tag")
     result.license = obj.requiredField("license")
@@ -268,7 +268,7 @@ proc getPackage*(pkg: string, options: Options, resPkg: var Package, ignorePacka
     for p in packages:
       if (pkgIsUrl and p.hasKey("url") and p["url"].str == pkg) or
           (normalize(p["name"].str) == normalize(pkg)):
-        resPkg = p.fromJson()
+        resPkg = p.fromJson(options)
         resPkg = resolveAlias(resPkg, options)
         return true
 
@@ -286,7 +286,7 @@ proc getPackageList*(options: Options): seq[Package] =
   for name, list in options.config.packageLists:
     let packages = readPackageList(name, options)
     for p in packages:
-      let pkg: Package = p.fromJson()
+      let pkg: Package = p.fromJson(options)
       if pkg.name notin namesAdded:
         result.add(pkg)
         namesAdded.incl(pkg.name)
