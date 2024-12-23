@@ -42,7 +42,7 @@ proc clear(pkgList: var PackageList) =
 proc endSection(config: var Config,
                 currentSection: string,
                 currentPackageList: var PackageList,
-                currentUrlRedirect: var tuple[source: string, target: string]
+                currentUrlMapping: var tuple[source: string, target: string]
 ) =
   case currentSection
   of "packagelist":
@@ -52,9 +52,9 @@ proc endSection(config: var Config,
       raise nimbleError("Attempted to specify `url` and `path` for the same package list '$1'" % currentPackageList.name)
     if currentPackageList.name.len > 0:
       config.packageLists[currentPackageList.name.normalize] = currentPackageList
-  of "urlredirect":
-    if currentUrlRedirect.source.len > 0:
-      config.urlMappings[currentUrlRedirect.source] = currentUrlRedirect.target
+  of "urlmapping":
+    if currentUrlMapping.source.len > 0:
+      config.urlMappings[currentUrlMapping.source] = currentUrlMapping.target
   else:
     discard
 
@@ -69,21 +69,21 @@ proc parseConfig*(): Config =
     open(p, f, confFile)
     var currentSection = ""
     var currentPackageList: PackageList
-    var currentUrlRedirect: tuple[source: string, target: string]
+    var currentUrlMapping: tuple[source: string, target: string]
     while true:
       var e = next(p)
       case e.kind
       of cfgEof:
-        result.endSection(currentSection, currentPackageList, currentUrlRedirect)
+        result.endSection(currentSection, currentPackageList, currentUrlMapping)
         break
       of cfgSectionStart:
-        result.endSection(currentSection, currentPackageList, currentUrlRedirect)
+        result.endSection(currentSection, currentPackageList, currentUrlMapping)
         currentSection = e.section.normalize()
         case currentSection
         of "packagelist":
           currentPackageList.clear()
-        of "urlredirect":
-          currentUrlRedirect = ("", "")
+        of "urlmapping":
+          currentUrlMapping = ("", "")
         else:
           raise nimbleError("Unable to parse config file:" &
                              " Unknown section: " & e.key)
@@ -111,13 +111,13 @@ proc parseConfig*(): Config =
           else: assert false
         of "source":
           case currentSection
-          of "urlredirect":
-            currentUrlRedirect.source = e.value
+          of "urlmapping":
+            currentUrlMapping.source = e.value
           else: assert false
         of "target":
           case currentSection
-          of "urlredirect":
-            currentUrlRedirect.source = e.value
+          of "urlmapping":
+            currentUrlMapping.source = e.value
           else: assert false
         of "path":
           case currentSection
