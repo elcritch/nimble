@@ -72,11 +72,11 @@ proc displayUsingSpecialVersionWarning(solvedPkgs: seq[SolvedPackage], options: 
 proc addReverseDeps(solvedPkgs: seq[SolvedPackage], allPkgsInfo: seq[PackageInfo], options: Options) = 
   for pkg in solvedPkgs:
     echo "solvedPkg:pkg: ", pkg 
-    let solvedPkg = getPackageInfo(pkg.pkgName, allPkgsInfo, some pkg.version)
+    let solvedPkg = getPackageInfo(pkg.pkgName, allPkgsInfo, options, some pkg.version)
     echo "solvedPkg: ", solvedPkg 
     if solvedPkg.isNone: continue
     for (reverseDepName, ver) in pkg.reverseDependencies:
-      var reverseDep = getPackageInfo(reverseDepName, allPkgsInfo, some ver)
+      var reverseDep = getPackageInfo(reverseDepName, allPkgsInfo, options, some ver)
       echo "reverseDep: ", reverseDep 
       if reverseDep.isNone: continue
       if reverseDep.get.myPath.parentDir.developFileExists:
