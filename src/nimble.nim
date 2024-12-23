@@ -71,10 +71,13 @@ proc displayUsingSpecialVersionWarning(solvedPkgs: seq[SolvedPackage], options: 
 
 proc addReverseDeps(solvedPkgs: seq[SolvedPackage], allPkgsInfo: seq[PackageInfo], options: Options) = 
   for pkg in solvedPkgs:
+    echo "solvedPkg:pkg: ", pkg 
     let solvedPkg = getPackageInfo(pkg.pkgName, allPkgsInfo, some pkg.version)
+    echo "solvedPkg: ", solvedPkg 
     if solvedPkg.isNone: continue
     for (reverseDepName, ver) in pkg.reverseDependencies:
       var reverseDep = getPackageInfo(reverseDepName, allPkgsInfo, some ver)
+      echo "reverseDep: ", reverseDep 
       if reverseDep.isNone: continue
       if reverseDep.get.myPath.parentDir.developFileExists:
         reverseDep.get.isLink = true
@@ -148,6 +151,7 @@ proc processFreeDependenciesSAT(rootPkgInfo: PackageInfo, options: Options): Has
 
   for pkg in result:
     allPkgsInfo.add pkg
+  echo "allPkgsInfo: ", allPkgsInfo
   addReverseDeps(solvedPkgs, allPkgsInfo, options)
 
   for nonLocked in toRemoveFromLocked:
@@ -197,12 +201,12 @@ proc processFreeDependencies(pkgInfo: PackageInfo,
     let resolvedDep = dep.resolveAlias(options)
     display("Checking", "for $1" % $resolvedDep, priority = MediumPriority)
     var pkg = initPackageInfo()
-    var found = findPkg(preferredPackages, resolvedDep, pkg) or
-      findPkg(pkgList, resolvedDep, pkg)
+    var found = findPkg(preferredPackages, resolvedDep, pkg, options) or
+      findPkg(pkgList, resolvedDep, pkg, options)
     # Check if the original name exists.
     if not found and resolvedDep.name != dep.name:
       display("Checking", "for $1" % $dep, priority = MediumPriority)
-      found = findPkg(preferredPackages, dep, pkg) or findPkg(pkgList, dep, pkg)
+      found = findPkg(preferredPackages, dep, pkg, options) or findPkg(pkgList, dep, pkg, options)
       if found:
         displayWarning(&"Installed package {dep.name} should be renamed to " &
                        resolvedDep.name)
@@ -379,7 +383,7 @@ proc reinstallSymlinksForOlderVersion(pkgDir: string, options: Options) =
   let (pkgName, _, _) = getNameVersionChecksum(pkgDir)
   let pkgList = getInstalledPkgsMin(options.getPkgsDir(), options)
   var newPkgInfo = initPackageInfo()
-  if pkgList.findPkg((pkgName, newVRAny()), newPkgInfo):
+  if pkgList.findPkg((pkgName, newVRAny()), newPkgInfo, options):
     newPkgInfo = newPkgInfo.toFullInfo(options)
     for bin, _ in newPkgInfo.bin:
       let symlinkDest = newPkgInfo.getOutputDir(bin)
@@ -1136,7 +1140,7 @@ proc getPackageByPattern(pattern: string, options: Options): PackageInfo =
     let packages = getInstalledPkgsMin(options.getPkgsDir(), options)
     let identTuple = parseRequires(pattern)
     var skeletonInfo = initPackageInfo()
-    if not findPkg(packages, identTuple, skeletonInfo):
+    if not findPkg(packages, identTuple, skeletonInfo, options):
       raise nimbleError(
           "Specified package not found"
       )
@@ -1747,7 +1751,7 @@ proc validateDevelopDependenciesVersionRanges(dependentPkg: PackageInfo,
         # required then any version for the develop package is allowed.
         continue
       var depPkg = initPackageInfo()
-      if not findPkg(developDependencies, dep, depPkg):
+      if not findPkg(developDependencies, dep, depPkg, options):
         # This dependency is not part of the develop mode dependencies.
         continue
       if not withinRange(depPkg, dep.ver):
@@ -1934,13 +1938,13 @@ proc depsTree(options: Options,
   if options.action.format == "json":
     if options.action.depsAction == "inverted":
       raise nimbleError("Deps JSON format does not support inverted tree")
-    echo (%depsRecursive(pkgInfo, dependencies, errors)).pretty
+    echo (%depsRecursive(pkgInfo, dependencies, errors, options)).pretty
   elif options.action.depsAction == "inverted":
-    printDepsHumanReadableInverted(pkgInfo, dependencies, errors)
+    printDepsHumanReadableInverted(pkgInfo, dependencies, errors, options)
   elif options.action.depsAction == "tree":
-    printDepsHumanReadable(pkgInfo, dependencies, errors)
+    printDepsHumanReadable(pkgInfo, dependencies, errors, options)
   else:
-    printDepsHumanReadable(pkgInfo, dependencies, errors, true)
+    printDepsHumanReadable(pkgInfo, dependencies, errors, options, true)
 
 proc deps(options: Options) =
   ## handles deps actions
@@ -2463,7 +2467,7 @@ proc setNimBin*(options: var Options) =
     #Is this actually needed? If so, guard it with the setNimBinaries flag
     # & getInstalledPkgsMin(options.nimBinariesDir, options)
     var pkg = initPackageInfo()
-    if findPkg(installedPkgs, nimVersion, pkg):
+    if findPkg(installedPkgs, nimVersion, pkg, options):
       options.useNimFromDir(pkg.getRealDir, pkg.basicInfo.version.toVersionRange())
     else:
       # It still no nim found then download and install one to allow parsing of
@@ -2498,7 +2502,7 @@ proc setNimBin*(options: var Options) =
     if require.name.isNim and not withinRange(nimVer, require.ver):
       let installedPkgs = getInstalledPkgsMin(options.getPkgsDir(), options)
       var pkg = initPackageInfo()
-      if findPkg(installedPkgs, require, pkg):
+      if findPkg(installedPkgs, require, pkg, options):
         options.useNimFromDir(pkg.getRealDir, require.ver)
       else:
         if not options.offline and options.prompt("No nim version matching $1. Download it now?" % $require.ver):

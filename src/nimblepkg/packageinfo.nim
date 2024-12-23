@@ -364,7 +364,7 @@ proc resolveAlias*(dep: PkgTuple, options: Options): PkgTuple =
     result.name = pkg.name
 
 proc findPkg*(pkglist: seq[PackageInfo], dep: PkgTuple,
-              r: var PackageInfo): bool =
+              r: var PackageInfo, options: Options): bool =
   ## Searches ``pkglist`` for a package of which version is within the range
   ## of ``dep.ver``. ``True`` is returned if a package is found. If multiple
   ## packages are found the newest one is returned (the one with the highest
@@ -374,9 +374,10 @@ proc findPkg*(pkglist: seq[PackageInfo], dep: PkgTuple,
   ## highest priority.
   ##
   ## **Note**: dep.name here could be a URL, hence the need for pkglist.meta.
+  let name = dep.name.getUrl(options)
   for pkg in pkglist:
-    if cmpIgnoreStyle(pkg.basicInfo.name, dep.name) != 0 and
-       cmpIgnoreStyle(pkg.metaData.url, dep.name) != 0: continue
+    if cmpIgnoreStyle(pkg.basicInfo.name, name) != 0 and
+       cmpIgnoreStyle(pkg.metaData.url, name) != 0: continue
     if pkg.isLink:
       # If `pkg.isLink` this is a develop mode package and develop mode packages
       # are always with higher priority than installed packages. Version range
