@@ -164,6 +164,7 @@ template usePackageListFile*(fileName: string, body: untyped) =
       [PackageList]
       name = "local"
       path = "$1"
+      [UrlRedirect]
     """.unindent % (fileName).replace("\\", "\\\\"))
     check execNimble(["refresh"]).exitCode == QuitSuccess
     body
