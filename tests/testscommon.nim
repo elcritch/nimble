@@ -164,7 +164,7 @@ template usePackageListFile*(fileName: string, body: untyped) =
       [PackageList]
       name = "local"
       path = "$1"
-      [UrlRedirect]
+      [UrlMapping]
       source = "https://github.com/babel-test/packagea.git"
       target = "https://github.com/nimble-test/packagea.git"
     """.unindent % (fileName).replace("\\", "\\\\"))
