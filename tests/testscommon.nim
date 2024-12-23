@@ -165,6 +165,8 @@ template usePackageListFile*(fileName: string, body: untyped) =
       name = "local"
       path = "$1"
       [UrlRedirect]
+      source = "https://github.com/babel-test/packagea.git"
+      target = "https://github.com/nimble-test/packagea.git"
     """.unindent % (fileName).replace("\\", "\\\\"))
     check execNimble(["refresh"]).exitCode == QuitSuccess
     body

@@ -42,7 +42,7 @@ proc clear(pkgList: var PackageList) =
 proc endSection(config: var Config,
                 currentSection: string,
                 currentPackageList: var PackageList,
-                currentUrlRedirect: var tuple[origin: string, target: string]
+                currentUrlRedirect: var tuple[source: string, target: string]
 ) =
   case currentSection
   of "packagelist":
@@ -53,8 +53,8 @@ proc endSection(config: var Config,
     if currentPackageList.name.len > 0:
       config.packageLists[currentPackageList.name.normalize] = currentPackageList
   of "urlredirect":
-    if currentUrlRedirect.origin.len > 0:
-      config.urlMappings[currentUrlRedirect.origin] = currentUrlRedirect.target
+    if currentUrlRedirect.source.len > 0:
+      config.urlMappings[currentUrlRedirect.source] = currentUrlRedirect.target
   else:
     discard
 
@@ -69,7 +69,7 @@ proc parseConfig*(): Config =
     open(p, f, confFile)
     var currentSection = ""
     var currentPackageList: PackageList
-    var currentUrlRedirect: tuple[origin: string, target: string]
+    var currentUrlRedirect: tuple[source: string, target: string]
     while true:
       var e = next(p)
       case e.kind
@@ -109,15 +109,15 @@ proc parseConfig*(): Config =
           of "packagelist":
             currentPackageList.urls.add(e.value)
           else: assert false
-        of "origin":
+        of "source":
           case currentSection
           of "urlredirect":
-            currentUrlRedirect.origin = e.value
+            currentUrlRedirect.source = e.value
           else: assert false
         of "target":
           case currentSection
           of "urlredirect":
-            currentUrlRedirect.target = e.value
+            currentUrlRedirect.source = e.value
           else: assert false
         of "path":
           case currentSection

@@ -47,7 +47,7 @@ suite "nimble refresh":
         name = "local"
         path = "$1"
         [UrlRedirect]
-        origin = "https://github.com/babel-test/packagea.git"
+        source = "https://github.com/babel-test/packagea.git"
         target = "https://github.com/nimble-test/packagea.git"
       """.unindent % (getCurrentDir() / "issue368" / "packages.json").replace(
         "\\", "\\\\"))
