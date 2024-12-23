@@ -841,8 +841,8 @@ proc parseCmdLine*(): Options =
 
 proc getUrl*(url: string, options: Options): string =
   result = options.config.urlMappings.getOrDefault(url, url)
-  echo "getUrl:urls: ", options.config.urlMappings
-  echo "getUrl: ", result, " <= ", url
+  # echo "getUrl:urls: ", options.config.urlMappings
+  # echo "getUrl: ", result, " <= ", url
 
 proc getProxy*(options: Options): Proxy =
   ## Returns ``nil`` if no proxy is specified.

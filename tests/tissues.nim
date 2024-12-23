@@ -401,6 +401,7 @@ suite "issues":
   test "issue #1158":
     cd "issue1158":
       let (output, exitCode) = execNimble("--silent", "echoRequires")
+      echo "issue1158: ", output
       check:
         exitCode == QuitSuccess
         output.strip() == "@[\"nim >= 1.6.16\"]"

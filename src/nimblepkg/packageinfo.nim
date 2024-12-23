@@ -376,8 +376,8 @@ proc findPkg*(pkglist: seq[PackageInfo], dep: PkgTuple,
   ## **Note**: dep.name here could be a URL, hence the need for pkglist.meta.
   let name = dep.name.getUrl(options)
   for pkg in pkglist:
-    echo "PKG:name: ", pkg.basicInfo.name 
-    echo "PKG:url: ", pkg.metaData.url 
+    # echo "PKG:name: ", pkg.basicInfo.name 
+    # echo "PKG:url: ", pkg.metaData.url 
     if cmpIgnoreStyle(pkg.basicInfo.name, name) != 0 and
        cmpIgnoreStyle(pkg.metaData.url, name) != 0: continue
     if pkg.isLink:

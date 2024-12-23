@@ -71,13 +71,10 @@ proc displayUsingSpecialVersionWarning(solvedPkgs: seq[SolvedPackage], options: 
 
 proc addReverseDeps(solvedPkgs: seq[SolvedPackage], allPkgsInfo: seq[PackageInfo], options: Options) = 
   for pkg in solvedPkgs:
-    echo "solvedPkg:pkg: ", pkg 
     let solvedPkg = getPackageInfo(pkg.pkgName, allPkgsInfo, options, some pkg.version)
-    echo "solvedPkg: ", solvedPkg 
     if solvedPkg.isNone: continue
     for (reverseDepName, ver) in pkg.reverseDependencies:
       var reverseDep = getPackageInfo(reverseDepName, allPkgsInfo, options, some ver)
-      echo "reverseDep: ", reverseDep 
       if reverseDep.isNone: continue
       if reverseDep.get.myPath.parentDir.developFileExists:
         reverseDep.get.isLink = true
@@ -151,7 +148,6 @@ proc processFreeDependenciesSAT(rootPkgInfo: PackageInfo, options: Options): Has
 
   for pkg in result:
     allPkgsInfo.add pkg
-  echo "allPkgsInfo: ", allPkgsInfo
   addReverseDeps(solvedPkgs, allPkgsInfo, options)
 
   for nonLocked in toRemoveFromLocked:
@@ -1074,8 +1070,6 @@ proc listInstalled(options: Options) =
 
   h.sort(proc (a, b: (string, seq[VersionChecksumTuple])): int =
     cmpIgnoreCase(a[0], b[0]))
-  for k in keys(h):
-    echo k & "  [" & h[k].join(", ") & "]"
 
 type VersionAndPath = tuple[version: Version, path: string]
 

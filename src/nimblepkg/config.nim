@@ -136,5 +136,3 @@ proc parseConfig*(): Config =
       of cfgError:
         raise nimbleError("Unable to parse config file: " & e.msg)
     close(p)
-
-  echo "parseConfig: ", result
